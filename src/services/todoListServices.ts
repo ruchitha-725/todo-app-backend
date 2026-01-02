@@ -1,0 +1,31 @@
+import { db } from "../firebaseConfiguration/firebase";
+import task, { taskStatus, taskPriority } from "../types/taskType";
+
+const addTasksService = async ( name: string, description: string, deadline: string, status: taskStatus, priority: taskPriority) => {
+    if(!name.trim() || !description.trim() || !deadline || !status || !priority){
+        throw new Error("Missing Required fields");
+    }
+    name = name.trim();
+    description = description.trim();
+
+    try{
+        const existing = await db.collection("tasks")
+        .where('name', '==', name)
+        .limit(1)
+        .get();
+        if(!existing.empty){
+            throw new Error(`Task with name "${name}" already exists.`);
+        }
+        const task = { name, description, deadline, status, priority };        
+        const docRef = await db.collection("tasks").add(task);    
+        return { ...task, id: docRef.id };
+    }
+  catch (error: any) {
+    if (error.message && error.message.includes("Task with name")) {
+        throw new Error("Invalid input");
+    }
+    throw error;
+}
+};
+export default addTasksService;
+
