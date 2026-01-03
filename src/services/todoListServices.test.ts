@@ -1,4 +1,4 @@
-import {addTasksService,viewTasksService} from "./todoListServices";
+import {addTasksService,viewTasksService,editTasksService} from "./todoListServices";
 import { db } from "../firebaseConfiguration/firebase";
 import { taskStatus, taskPriority } from "../types/taskType";
 
@@ -137,6 +137,32 @@ describe("viewTasksService", () => {
     await expect(viewTasksService()).rejects.toThrow(
       "Failed to retrieve the tasks from database"
     );
+  });
+});
+describe("editTasksService", () => {
+  it("should update a task successfully", async () => {
+    const mockResult = {
+      empty: false,
+      docs: [{ id: "id123" }]
+    };
+    const mockUpdate = jest.fn().mockResolvedValue(true);
+    (db.collection as jest.Mock).mockReturnValue({
+      where: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      get: jest.fn().mockResolvedValue(mockResult),
+      doc: jest.fn().mockReturnValue({ update: mockUpdate }) 
+    });
+    const result = await editTasksService("Yoga", "Stretching", "2026-05-01", "Pending", "low");
+    expect(result.id).toBe("id123");
+    expect(mockUpdate).toHaveBeenCalled();
+  });
+  it("should throw error if task is not found", async () => {
+    (db.collection as jest.Mock).mockReturnValue({
+      where: jest.fn().mockReturnThis(),
+      limit: jest.fn().mockReturnThis(),
+      get: jest.fn().mockResolvedValue({ empty: true }) 
+    });
+    await expect(editTasksService("Fake", "", "", "", "")).rejects.toThrow("Failed to update task");
   });
 });
 
