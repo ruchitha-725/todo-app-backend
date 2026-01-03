@@ -1,7 +1,7 @@
 import { db } from "../firebaseConfiguration/firebase";
 import task, { taskStatus, taskPriority } from "../types/taskType";
 
-const addTasksService = async ( name: string, description: string, deadline: string, status: taskStatus, priority: taskPriority) => {
+ export const addTasksService = async ( name: string, description: string, deadline: string, status: taskStatus, priority: taskPriority) => {
     if(!name.trim() || !description.trim() || !deadline || !status || !priority){
         throw new Error("Missing Required fields");
     }
@@ -27,5 +27,23 @@ const addTasksService = async ( name: string, description: string, deadline: str
     throw error;
 }
 };
-export default addTasksService;
+
+ export const viewTasksService=async() =>{
+    try{
+        const result=await db.collection("tasks").get();
+        if(result.empty){
+            return [];
+        }
+        const todoTask=result.docs.map((doc)=>{
+            return{
+                id:doc.id,
+                ...doc.data()
+            } as task;
+        });
+        return todoTask;
+    }catch(error){
+        throw new Error("Failed to retrieve the tasks from database");
+    }
+};
+
 

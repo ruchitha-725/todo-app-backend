@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import addTasksService  from "../services/todoListServices"; 
+import {addTasksService,viewTasksService}  from "../services/todoListServices"; 
 
-const addTasksController = async (req: Request, res: Response) => {
+export const addTasksController = async (req: Request, res: Response) => {
     try {
         const { name, description, deadline, status, priority } = req.body;
         if (!name || !description || !deadline || !status || !priority) {
@@ -21,4 +21,14 @@ const addTasksController = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "Something went wrong on the server" });
     }
 };
-export default addTasksController;
+
+export const viewTasksController=async(req:Request,res:Response)=>{
+    try{
+        const todoTasks=await viewTasksService();
+        res.status(200).json(todoTasks);
+    }catch (error: any) {
+    res.status(error.status || 500).json({ message: error.message || "Something went wrong" });
+  }
+    };
+
+
