@@ -1,4 +1,4 @@
-import {addTasksService,viewTasksService,editTasksService} from "./todoListServices";
+import {addTasksService,viewTasksService,editTasksService,deleteTasksService} from "./todoListServices";
 import { db } from "../firebaseConfiguration/firebase";
 import { taskStatus, taskPriority } from "../types/taskType";
 
@@ -162,7 +162,44 @@ describe("editTasksService", () => {
       limit: jest.fn().mockReturnThis(),
       get: jest.fn().mockResolvedValue({ empty: true }) 
     });
-    await expect(editTasksService("Fake", "", "", "", "")).rejects.toThrow("Failed to update task");
+    await expect(editTasksService("Sleep", "", "", "", "")).rejects.toThrow("Failed to update task");
   });
 });
+describe("deleteTasksService", () => {
+  const mockId = "id123";
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+  it("should delete the task successfully if it exists", async () => {
+    const mockGet = jest.fn().mockResolvedValue({ exists: true });
+    const mockDelete = jest.fn().mockResolvedValue(true);
+    (db.collection as jest.Mock).mockReturnValue({
+      doc: jest.fn().mockReturnValue({
+        get: mockGet,
+        delete: mockDelete,
+      }),
+    });
+    const result = await deleteTasksService(mockId);
+    expect(result.message).toBe("Deleted successfully");
+    expect(mockDelete).toHaveBeenCalledTimes(1);
+  });
+  it("should throw Task not found if the document does not exist", async () => {
+    const mockGet = jest.fn().mockResolvedValue({ exists: false });
+    (db.collection as jest.Mock).mockReturnValue({
+      doc: jest.fn().mockReturnValue({
+        get: mockGet,
+      }),
+    });
+    await expect(deleteTasksService("id420")).rejects.toThrow("Task not found");
+  });
+  it("should throw a database error if something crashes", async () => {
+    (db.collection as jest.Mock).mockReturnValue({
+      doc: jest.fn().mockImplementation(() => {
+        throw new Error("DB Connection Lost");
+      }),
+    });
+    await expect(deleteTasksService(mockId)).rejects.toThrow("DB Connection Lost");
+  });
+});
+
 
