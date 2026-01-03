@@ -69,6 +69,20 @@ export const editTasksService = async (
     throw new Error("Failed to update task");
   }
 };
+export const deleteTasksService = async (id: string) => {
+  try {
+    const result = db.collection("tasks").doc(id);
+    const doc = await result.get();
+    if (!doc.exists) {
+      throw new Error("Task not found");
+    }
+    await result.delete();
+    return { id, message: "Deleted successfully" };
+  } catch (error: any) {
+    throw new Error(error.message || "Failed to delete task");
+  }
+};
+
 
 
 
