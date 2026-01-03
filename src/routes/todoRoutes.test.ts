@@ -1,6 +1,6 @@
 import request from "supertest";
 import express from "express";
-import todoRoutes from "../routes/todoRoutes";
+import todoRoutes from "./todoRoutes";
 import addTasksController from "../controllers/todoListControllers";
 
 jest.mock("../controllers/todoListControllers", () => jest.fn((req, res) => res.status(200).send()));
