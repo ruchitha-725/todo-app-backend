@@ -29,7 +29,8 @@
 - **[Firebase](https://firebase.google.com/docs)**: Firebase service Integration for storing data.
 
 ## Features 🔐
-
+### Feature:Add-task
+- Implemented add task functionality with required fileds.
 
 ## Setup & Run 🛠
 
