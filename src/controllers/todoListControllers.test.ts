@@ -1,5 +1,5 @@
-import { addTasksController, viewTasksController,editTasksController } from "../controllers/todoListControllers"; 
-import { addTasksService, viewTasksService,editTasksService } from "../services/todoListServices";
+import { addTasksController, viewTasksController,editTasksController,deleteTasksController } from "../controllers/todoListControllers"; 
+import { addTasksService, viewTasksService,editTasksService,deleteTasksService } from "../services/todoListServices";
 import { taskPriority, taskStatus } from "../types/taskType";
 
 jest.mock("../firebaseConfiguration/firebase", () => ({
@@ -65,6 +65,13 @@ describe("Task Controllers", () => {
       expect(res.status).toHaveBeenCalledWith(500);
       expect(res.json).toHaveBeenCalledWith({ message: "Server Error" });
     });
+    it("should return 500 and default message for an error", async () => {
+    (viewTasksService as jest.Mock).mockRejectedValue({}); 
+    await viewTasksController(req, res);
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ message: "Something went wrong" });
+});
+
   });
 });
 describe("editTasksController", () => {
@@ -98,5 +105,35 @@ describe("editTasksController", () => {
     expect(res.status).toHaveBeenCalledWith(500);
     expect(res.json).toHaveBeenCalledWith({ message: "DB Error" });
   });
+  it("should return 500 if edit service throws an error", async () => {
+    const req = { body: { name: "Yoga" } }; 
+    (editTasksService as jest.Mock).mockRejectedValue({}); 
+    await editTasksController(req as any, res as any);
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ message: "Something went wrong" });
 });
+
+});
+describe("deleteTasksController", () => {
+  it("should return 200 when task is deleted", async () => {
+    const req = { params: { id: "id123" } };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis()
+    };
+    (deleteTasksService as jest.Mock).mockResolvedValue({ id: "id123" });
+    await deleteTasksController(req as any, res as any);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith({ message: "Task deleted successfully" });
+  });
+  it("should return 404 if task doesn't exist", async () => {
+    const req = { params: { id: "id420" } };
+    const res = { status: jest.fn().mockReturnThis(), json: jest.fn().mockReturnThis() };
+    (deleteTasksService as jest.Mock).mockRejectedValue(new Error("Task not found"));
+    await deleteTasksController(req as any, res as any);
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.json).toHaveBeenCalledWith({ message: "Task not found" });
+  });
+});
+
 
