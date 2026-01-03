@@ -45,5 +45,30 @@ import task, { taskStatus, taskPriority } from "../types/taskType";
         throw new Error("Failed to retrieve the tasks from database");
     }
 };
+export const editTasksService = async (
+  name: string, 
+  description: string, 
+  deadline: string, 
+  status: string, 
+  priority: string
+) => {
+  try {
+    const result = await db.collection("tasks").where("name", "==", name).limit(1).get();
+    if (result.empty) {
+      throw new Error("Task not found");
+    }
+    const docId = result.docs[0].id;
+    await db.collection("tasks").doc(docId).update({
+      description,
+      deadline,
+      status,
+      priority
+    });
+    return { name, description, deadline, status, priority, id: docId };
+  } catch (error) {
+    throw new Error("Failed to update task");
+  }
+};
+
 
 

@@ -1,5 +1,5 @@
-import { addTasksController, viewTasksController } from "../controllers/todoListControllers"; 
-import { addTasksService, viewTasksService } from "../services/todoListServices";
+import { addTasksController, viewTasksController,editTasksController } from "../controllers/todoListControllers"; 
+import { addTasksService, viewTasksService,editTasksService } from "../services/todoListServices";
 import { taskPriority, taskStatus } from "../types/taskType";
 
 jest.mock("../firebaseConfiguration/firebase", () => ({
@@ -67,3 +67,36 @@ describe("Task Controllers", () => {
     });
   });
 });
+describe("editTasksController", () => {
+  let req: any;
+  let res: any;
+  beforeEach(() => {
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis()
+    };
+  });
+  it("should return 200 when update works", async () => {
+    req = { 
+      body: { name: "Yoga", description: "Stretching", deadline: "2026-01-01", status: "Pending", priority: "Low" } 
+    };
+    (editTasksService as jest.Mock).mockResolvedValue({ name: "Yoga", id: "id123" });
+    await editTasksController(req, res);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ message: "Task updated successfully" }));
+  });
+  it("should return 400 if name is missing in body", async () => {
+    req = { body: { description: "" } }; 
+    await editTasksController(req, res);
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(res.json).toHaveBeenCalledWith({ message: "Task name is required to edit" });
+  });
+  it("should return 500 if service crashes", async () => {
+    req = { body: { name: "Yoga", description: "Stretching", deadline: "2026-01-01", status: "Pending", priority: "Low" } };
+    (editTasksService as jest.Mock).mockRejectedValue(new Error("DB Error"));
+    await editTasksController(req, res);
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ message: "DB Error" });
+  });
+});
+
