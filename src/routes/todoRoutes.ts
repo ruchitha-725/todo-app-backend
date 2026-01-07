@@ -3,10 +3,10 @@ import { addTasksController, viewTasksController, editTasksController, deleteTas
 
 const todoRoutes = Router();
 
+todoRoutes.get('/priority/high', viewHighPriorityTasksController);
 todoRoutes.post("/add", addTasksController);
 todoRoutes.get("/view", viewTasksController);
 todoRoutes.patch("/editTask/:id", editTasksController);
 todoRoutes.delete("/deleteTask/:id", deleteTasksController);
-todoRoutes.get('/priority/high', viewHighPriorityTasksController);
 
 export default todoRoutes;
