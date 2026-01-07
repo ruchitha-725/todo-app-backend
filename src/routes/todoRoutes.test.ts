@@ -1,11 +1,11 @@
 import request from 'supertest';
 import express, { Express } from 'express';
 import todoRoutes from './todoRoutes';
-import { addTasksController, viewTasksController, editTasksController, deleteTasksController } from '../controllers/todoListControllers';
+import { addTasksController, viewTasksController, editTasksController, deleteTasksController, viewHighPriorityTasksController } from '../controllers/todoListControllers';
 
 jest.mock('../controllers/todoListControllers', () => ({
   addTasksController: jest.fn((req, res) => {
-    res.status(200).json({ status: 'controller function called' });
+    res.status(200).json({ status: 'addTask controller function called' });
   }),
   viewTasksController: jest.fn((req, res) => {
     res.status(200).json({ status: 'getTasks controller called' });
@@ -15,13 +15,17 @@ jest.mock('../controllers/todoListControllers', () => ({
   }),
   deleteTasksController: jest.fn((req, res) => {
     res.status(200).json({ status: 'deleteTask controller called' })
-  })
+  }),
+  viewHighPriorityTasksController: jest.fn((req, res) => {
+    res.status(200).json({ status: 'viewHighPriorityTask controller called' })
+  }),
 }));
 
 const mockedAddTask = addTasksController as jest.Mock;
 const mockedGetTasks = viewTasksController as jest.Mock;
 const mockedEditTasks = editTasksController as jest.Mock;
 const mockedDeleteTask = deleteTasksController as jest.Mock;
+const mockedViewHighPriorityTask = viewHighPriorityTasksController as jest.Mock;
 
 const app: Express = express();
 app.use(express.json());
@@ -38,7 +42,7 @@ describe('todoRoutes', () => {
       .send(testBody)
       .expect(200);
     expect(mockedAddTask).toHaveBeenCalledTimes(1);
-    expect(response.body).toEqual({ status: 'controller function called' });
+    expect(response.body).toEqual({ status: 'addTask controller function called' });
     const reqArg = mockedAddTask.mock.calls[0][0];
     expect(reqArg.body).toEqual(testBody);
   });
@@ -82,5 +86,13 @@ describe('todoRoutes', () => {
       .delete('/todoTasks/deleteTasks/id123')
       .expect(404);
     expect(mockedDeleteTask).not.toHaveBeenCalled();
+  });
+  it('should call the viewHighPriorityTasks controller function when GET is requested', async () => {
+    const response = await request(app)
+      .get('/todoTasks/priority/high')
+      .expect(200);
+    expect(mockedViewHighPriorityTask).toHaveBeenCalledTimes(1);
+    expect(mockedGetTasks).not.toHaveBeenCalled();
+    expect(response.body).toEqual({ status: 'viewHighPriorityTask controller called' });
   });
 });

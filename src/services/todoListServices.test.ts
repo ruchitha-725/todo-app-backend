@@ -1,4 +1,4 @@
-import { addTasksService, viewTasksService, editTasksService, deleteTasksService } from "./todoListServices";
+import { addTasksService, viewTasksService, editTasksService, deleteTasksService, viewHighPriorityTasksService } from "./todoListServices";
 import { db } from "../firebaseConfiguration/firebase";
 import { taskStatus, taskPriority } from "../types/taskType";
 
@@ -77,7 +77,6 @@ describe("addTasksService", () => {
   });
 
 });
-
 describe("viewTasksService", () => {
   afterEach(() => {
     jest.clearAllMocks();
@@ -155,7 +154,6 @@ describe("editTasksService", () => {
     expect(result.id).toBe("id123");
     expect(mockUpdate).toHaveBeenCalled();
   });
-
   it("should throw error if task is not found", async () => {
     mockGet.mockResolvedValue({ exists: false });
     await expect(editTasksService("id404", "No", "Descrip", "Dead", "Status", "Priority"))
@@ -203,5 +201,56 @@ describe("deleteTasksService", () => {
     await expect(deleteTasksService(mockId)).rejects.toThrow("DB Connection Lost");
   });
 });
-
-
+describe("viewHighPriorityTasksService", () => {
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+  it("should return all tasks with HIGH priority", async () => {
+    const mockHighPriorityTask = {
+      name: "Todo",
+      priority: taskPriority.HIGH,
+      description: "Assignment",
+      deadline: "2026-01-11",
+      status: taskStatus.PENDING
+    };
+    const mockDocs = [
+      {
+        id: "id123",
+        data: () => mockHighPriorityTask,
+      },
+    ];
+    const mockWhere = jest.fn().mockReturnThis();
+    const mockGet = jest.fn().mockResolvedValue({
+      empty: false,
+      docs: mockDocs,
+    });
+    (db.collection as jest.Mock).mockReturnValue({
+      where: mockWhere,
+      get: mockGet,
+    });
+    const result = await viewHighPriorityTasksService();
+    expect(result).toHaveLength(1);
+    expect(result[0].priority).toBe(taskPriority.HIGH);
+    expect(result[0].id).toBe("id123");
+    expect(result[0].status).toBe(taskStatus.PENDING);
+    expect(result[0].deadline).toBe("2026-01-11");
+    expect(mockWhere).toHaveBeenCalledWith("priority", "==", taskPriority.HIGH);
+  });
+  it("should return an empty array if no high priority tasks exist", async () => {
+    (db.collection as jest.Mock).mockReturnValue({
+      where: jest.fn().mockReturnThis(),
+      get: jest.fn().mockResolvedValue({ empty: true }),
+    });
+    const result = await viewHighPriorityTasksService();
+    expect(result).toEqual([]);
+  });
+  it("should throw a specific error if firebase fails", async () => {
+    (db.collection as jest.Mock).mockReturnValue({
+      where: jest.fn().mockReturnThis(),
+      get: jest.fn().mockRejectedValue(new Error("Network Error")),
+    });
+    await expect(viewHighPriorityTasksService()).rejects.toThrow(
+      "Failed to get high priority tasks from firebase"
+    );
+  });
+});
