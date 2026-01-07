@@ -1,18 +1,15 @@
 import admin from 'firebase-admin';
-import fs from 'fs';
-import path from 'path';
 
-const serviceAccountPath = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+const serviceAccountConfig = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
 
-if (!serviceAccountPath) {
+if (!serviceAccountConfig) {
   throw new Error("Firebase environment variable is not set.");
 }
-const resolvedPath = path.resolve(serviceAccountPath);
-const fileContent = fs.readFileSync(resolvedPath, 'utf8');
-const serviceAccountConfig = JSON.parse(fileContent);
 if (!admin.apps.length) {
+  const parsedConfig = JSON.parse(serviceAccountConfig);
+  parsedConfig.private_key = parsedConfig.private_key.replace(/\\n/g, '\n');
   admin.initializeApp({
-    credential: admin.credential.cert(serviceAccountConfig),
+    credential: admin.credential.cert(parsedConfig),
   });
 }
 

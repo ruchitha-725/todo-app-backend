@@ -39,6 +39,9 @@
 ### Feature:Edit-task
 - Implemented Edit task functionality with required fileds.
 
+### Feature:Delete-task
+- Implemented delete task functionality with required fileds.
+
 ## Setup & Run 🛠
 
 1. **Clone the repository**:
