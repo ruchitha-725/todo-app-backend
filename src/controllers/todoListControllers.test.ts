@@ -1,5 +1,5 @@
-import { addTasksController, viewTasksController, editTasksController, deleteTasksController } from "../controllers/todoListControllers";
-import { addTasksService, viewTasksService, editTasksService, deleteTasksService } from "../services/todoListServices";
+import { addTasksController, viewTasksController, editTasksController, deleteTasksController, viewHighPriorityTasksController } from "../controllers/todoListControllers";
+import { addTasksService, viewTasksService, editTasksService, deleteTasksService, viewHighPriorityTasksService } from "../services/todoListServices";
 import { taskPriority, taskStatus } from "../types/taskType";
 
 jest.mock("../firebaseConfiguration/firebase", () => ({
@@ -18,7 +18,7 @@ describe("Task Controllers", () => {
       json: jest.fn().mockReturnThis(),
     };
   });
-describe("addTasksController", () => {
+  describe("addTasksController", () => {
     it("should return 400 if fields are missing", async () => {
       req.body = { name: "Yoga" };
       await addTasksController(req, res);
@@ -50,13 +50,13 @@ describe("addTasksController", () => {
       expect(res.json).toHaveBeenCalledWith({ message: "Task name already exists" });
     });
   });
-describe("viewTasksController", () => {
+  describe("viewTasksController", () => {
     it("should return 200 and the list of tasks", async () => {
-      const mockList = [{ id: "id123", name: "Yoga" }];
-      (viewTasksService as jest.Mock).mockResolvedValue(mockList);
+      const mockResult = [{ id: "id123", name: "Yoga" }];
+      (viewTasksService as jest.Mock).mockResolvedValue(mockResult);
       await viewTasksController(req, res);
       expect(res.status).toHaveBeenCalledWith(200);
-      expect(res.json).toHaveBeenCalledWith(mockList);
+      expect(res.json).toHaveBeenCalledWith(mockResult);
     });
     it("should return 500 if something fails", async () => {
       (viewTasksService as jest.Mock).mockRejectedValue(new Error("Server Error"));
@@ -141,5 +141,49 @@ describe("deleteTasksController", () => {
     expect(res.json).toHaveBeenCalledWith({ message: "Task not found" });
   });
 });
-
+describe("viewHighPriorityTasksController", () => {
+  let req: any;
+  let res: any;
+  beforeEach(() => {
+    req = {};
+    res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn().mockReturnThis(),
+    };
+  });
+  it("should return 200 and shows high priority tasks", async () => {
+    const mockHighPriorityList = [
+      {
+        id: "id123",
+        name: "Todo",
+        description: "Assignment",
+        deadline: "2026-01-11",
+        priority: taskPriority.HIGH,
+      }
+    ];
+    (viewHighPriorityTasksService as jest.Mock).mockResolvedValue(mockHighPriorityList);
+    await viewHighPriorityTasksController(req, res);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith(mockHighPriorityList);
+  });
+  it("should return 200 and empty array if no high priority tasks exist", async () => {
+    (viewHighPriorityTasksService as jest.Mock).mockResolvedValue([]);
+    await viewHighPriorityTasksController(req, res);
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith([]);
+  });
+  it("should return 500 if the service throws an error", async () => {
+    const errorMessage = "Failed to get high priority tasks from firebase";
+    (viewHighPriorityTasksService as jest.Mock).mockRejectedValue(new Error(errorMessage));
+    await viewHighPriorityTasksController(req, res);
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ message: errorMessage });
+  });
+  it("should return 500 with error message if service throws an unknown error", async () => {
+    (viewHighPriorityTasksService as jest.Mock).mockRejectedValue({});
+    await viewHighPriorityTasksController(req, res);
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({ message: "Failed to get high priority tasks" });
+  });
+});
 
