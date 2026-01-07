@@ -86,7 +86,23 @@ export const deleteTasksService = async (id: string) => {
         throw new Error(error.message || "Failed to delete task");
     }
 };
-
+export const viewHighPriorityTasksService = async () => {
+  try {
+    const result = await db.collection("tasks")
+      .where("priority", "==", taskPriority.HIGH)
+      .get();
+    if (result.empty) {
+      return [];
+    }
+    return result.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data()
+    })) as task[];
+    
+  } catch (error) {
+    throw new Error("Failed to get high priority tasks from firebase");
+  }
+};
 
 
 
