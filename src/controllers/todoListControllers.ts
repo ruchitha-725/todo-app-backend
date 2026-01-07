@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { addTasksService, viewTasksService, editTasksService, deleteTasksService } from "../services/todoListServices";
+import { addTasksService, viewTasksService, editTasksService, deleteTasksService, viewHighPriorityTasksService } from "../services/todoListServices";
 
 export const addTasksController = async (req: Request, res: Response) => {
     try {
@@ -67,6 +67,15 @@ export const deleteTasksController = async (req: Request, res: Response) => {
         return res.status(status).json({ message: error.message });
     }
 };
+export const viewHighPriorityTasksController = async (req: Request, res: Response) => {
+    try {
+        const tasks = await viewHighPriorityTasksService();
+        return res.status(200).json(tasks);
+    } catch (error: any) {
+        return res.status(500).json({ message: error.message || "Failed to get high priority tasks" });
+    }
+};
+
 
 
 
