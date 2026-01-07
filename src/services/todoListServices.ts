@@ -87,21 +87,20 @@ export const deleteTasksService = async (id: string) => {
     }
 };
 export const viewHighPriorityTasksService = async () => {
-  try {
-    const result = await db.collection("tasks")
-      .where("priority", "==", taskPriority.HIGH)
-      .get();
-    if (result.empty) {
-      return [];
+    try {
+        const result = await db.collection("tasks")
+            .where("priority", "==", taskPriority.HIGH)
+            .get();
+        if (result.empty) {
+            return [];
+        }
+        return result.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data()
+        })) as task[];
+    } catch (error) {
+        throw new Error("Failed to get high priority tasks from firebase");
     }
-    return result.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data()
-    })) as task[];
-    
-  } catch (error) {
-    throw new Error("Failed to get high priority tasks from firebase");
-  }
 };
 
 
