@@ -31,16 +31,19 @@
 ## Features 🔐
 
 ### Feature:Add-task
-- Implemented add task functionality with required fileds.
+- Implemented add task functionality with required fields.
 
 ### Feature:View-task
-- Implemented view task functionality with required fileds.
+- Implemented view task functionality with required fields.
 
 ### Feature:Edit-task
-- Implemented Edit task functionality with required fileds.
+- Implemented Edit task functionality with required fields.
 
 ### Feature:Delete-task
-- Implemented delete task functionality with required fileds.
+- Implemented delete task functionality with required fields.
+
+### Feature: View High priority Tasks
+- Implemented view high priority task functionality with required fields.
 
 ## Setup & Run 🛠
 
